@@ -5,7 +5,7 @@
 #define DELAY		300
 #define POSX		20
 #define POSY		15
-#define DISC_CHAR	'*'
+#define DISK_CHAR	'*'
 #define TOWR_CHAR	'|'
 
 typedef struct {
@@ -33,7 +33,7 @@ int X, Y;
 
 int main()
 {
-	TOWER tower[3]; /* Poterbno nam je 3 stuba */
+	TOWER tower[3]; /* Potrebna su nam 3 stuba */
 	int y, x;
 	int discs;
 
@@ -131,7 +131,7 @@ void printTOWR(TOWER* k, int discs)
 				size = k[i].diskSize[j];
 				x = k[i].bottomX - (size / 2); 		/* pomera se pocetak diska ulevo */
 				for(p = 0;p < size;p++){
-					mvprintw(y, x+p,"%c",DISC_CHAR);	/* disk se ispisuje sleva na desno */
+					mvprintw(y, x+p,"%c",DISK_CHAR);	/* disk se ispisuje sleva na desno */
 				} 
 			}
 			else
