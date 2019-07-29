@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define DELAY		300
-#define POSX		20
+#define POSX		10
 #define POSY		15
 #define DISK_CHAR	'*'
 #define TOWR_CHAR	'|'
@@ -14,13 +14,15 @@ typedef struct {
 	int* diskSize;
 }TOWER;
 
+WINDOW* initWin();
+
 void printMessWel(int y, int x, char* s);
 void printMessQit(int y, int x, char* s);
 void userInput(TOWER* k);
 
-void solveHan(TOWER* k, int discs, int src, int aux, int dest);
+void solveHan(WINDOW* myWin, TOWER* k, int discs, int src, int aux, int dest);
 void initTOWR(TOWER* k, int discs);
-void printTOWR(TOWER* k, int discs);
+void printTOWR(WINDOW* myWin, TOWER* k, int discs);
 void moveTOWR(TOWER* k, int discs, int src, int dest);
 void freeTOWR(TOWER* k);
 
@@ -30,12 +32,15 @@ char* enterMess = "Enter the number of discs: ";
 
 int discsG;
 int X, Y;
+int wX, wY;
 
 int main()
 {
 	TOWER tower[3]; /* Potrebna su nam 3 stuba */
 	int y, x;
 	int discs;
+
+	WINDOW* myWin;
 
 	initscr();
 	cbreak();
@@ -45,20 +50,26 @@ int main()
 	Y = y; X = x; 			
 
 	printMessWel(Y, X, welcomeMess);
-	/*printMessQit(Y, X, quitMess);*/
 	mvprintw(5, 5 , enterMess);
 	scanw("%d",&discs);
+	noecho();
 	refresh();
 	
 	curs_set(FALSE);
 	timeout(DELAY);
 
+	myWin = initWin();
+	wrefresh(myWin);
+	getmaxyx(myWin, wX, wY);
+	/*printw("Velicina prozora: %d %d\n",wX, wY);*/
+
+
 	discsG = discs;
 	initTOWR(tower, discs);
-	printTOWR(tower, discs);
-	solveHan(tower, discsG, 0, 1, 2);
+	printTOWR(myWin, tower, discs);
+	printMessQit(Y, X, quitMess);
+	solveHan(myWin, tower, discsG, 0, 1, 2);
 
-	
 	freeTOWR(tower);
 	/*getch();*/
 	endwin();
@@ -112,16 +123,14 @@ void moveTOWR(TOWER* k, int discs, int src, int dest)
 	k[dest].diskSize[index] = temp;
 	k[dest].discs++;
 }
-void printTOWR(TOWER* k, int discs)
+void printTOWR(WINDOW* myWin, TOWER* k, int discs)
 {
 	int i, j, x, y, size, p;
 
-	clear(); /* Mora svakim pozivom novu sliku da nacrta */
-	printMessWel(Y, X, welcomeMess);
-	printMessQit(Y, X, quitMess);
+	wclear(myWin); /* Mora svakim pozivom novu sliku da nacrta */
 
 	for(i = 0;i < 3;i++){
-		mvprintw(k[i].bottomY - discs - 1,
+		mvwprintw(myWin,k[i].bottomY - discs - 1,
 				k[i].bottomX,"%c", TOWR_CHAR);
 	} 
 	y = k[0].bottomY - discs;	/* krecemo od vrha prvog stuba */
@@ -131,16 +140,18 @@ void printTOWR(TOWER* k, int discs)
 				size = k[i].diskSize[j];
 				x = k[i].bottomX - (size / 2); 		/* pomera se pocetak diska ulevo */
 				for(p = 0;p < size;p++){
-					mvprintw(y, x+p,"%c",DISK_CHAR);	/* disk se ispisuje sleva na desno */
+					mvwprintw(myWin,y, x+p,"%c",DISK_CHAR);	/* disk se ispisuje sleva na desno */
 				} 
 			}
 			else
-				mvprintw(y, k[i].bottomX,"%c",TOWR_CHAR);
+				mvwprintw(myWin,y, k[i].bottomX,"%c",TOWR_CHAR);
 			y++; 
 		} 
 		y = k[0].bottomY - discs;
 	} 
-	refresh();
+
+	box(myWin, '!','~');
+	wrefresh(myWin);
 }
 void initTOWR(TOWER* k, int discs)
 {
@@ -186,14 +197,14 @@ void userInput(TOWER* k)
 		exit(EXIT_SUCCESS);
 	}
 }
-void  solveHan(TOWER* k, int discs, int src, int aux, int dest)
+void  solveHan(WINDOW* myWin, TOWER* k, int discs, int src, int aux, int dest)
 {
 	if(discs > 0) {
-		solveHan(k,discs - 1, src, dest, aux);
+		solveHan(myWin, k, discs - 1, src, dest, aux);
 		moveTOWR(k, discsG, src, dest);
-		printTOWR(k, discsG);
+		printTOWR(myWin,k, discsG);
 		userInput(k);
-		solveHan(k,discs - 1, aux, src, dest);
+		solveHan(myWin, k, discs - 1, aux, src, dest);
 	}
 }
 void freeTOWR(TOWER* k)
@@ -202,4 +213,24 @@ void freeTOWR(TOWER* k)
 	for(i = 0;i < 3;i++){
 		free(k[i].diskSize);
 	} 	
+}
+WINDOW* initWin()
+{
+	int height, width;
+	int x, y; /* pozicije u terminalu */
+	
+	x = 5;
+	y = x + 2;
+
+	width = X - 10;
+	height = Y - 8;
+
+	WINDOW* temp = newwin(height, width, y, x);
+	box(temp, '!','~');
+	//if(!temp) {
+		//exit(EXIT_FAILURE); /* TODO 
+	//{
+		
+
+	return temp;
 }
