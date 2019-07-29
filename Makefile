@@ -1,7 +1,7 @@
 
 SOURCES = TowerOfHanoi.c
 LIBS	= -lncurses
-CFLAGS	= -Wall
+CFLAGS	= -Wall -Wextra
 PROGRAM	= TowerOfHanoi
 
 $(PROGRAM): $(SOURCES)
